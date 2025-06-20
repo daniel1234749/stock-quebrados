@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import { getFirestore, collection, addDoc, getDocs, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { utils, writeFile } from "https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mjs";
 
-// Config de Firebase
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyAN-DQn2MJNz81kNSAcuw5yp7HDCiwfAmk",
   authDomain: "stockquebradosemanuel.firebaseapp.com",
@@ -33,8 +33,10 @@ async function mostrarArticulos(filtro = "") {
 
   let filtrados = articulos;
   if (filtro) {
-    filtrados = articulos.filter(a => a.departamento.trim().toLowerCase() === filtro.trim().toLowerCase());
-
+    const filtroNormalizado = filtro.trim().toLowerCase();
+    filtrados = articulos.filter(a => 
+      a.departamento && a.departamento.trim().toLowerCase() === filtroNormalizado
+    );
   }
 
   if (filtrados.length === 0) {
@@ -67,7 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await addDoc(collection(db, "articulos-quebrados"), {
         codigo: form.codigo.value,
         descripcion: form.descripcion.value,
-        departamento: form.departamento.value,
+        departamento: form.departamento.value.trim(),
         fecha: new Date()
       });
       alert("Artículo cargado con éxito ✅");
@@ -89,15 +91,32 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarArticulos();
   });
 
-  mostrarArticulos();
-
-  // Exportar a Excel
+  // Exportar lo que se ve en la tabla
   document.getElementById("exportar-excel").addEventListener("click", () => {
     const tabla = document.querySelector("table");
     const wb = utils.book_new();
     const ws = utils.table_to_sheet(tabla);
     utils.book_append_sheet(wb, ws, "Articulos");
-    writeFile(wb, "articulos_quebrados.xlsx");
+    writeFile(wb, "articulos_quebrados_visible.xlsx");
   });
-});
 
+  // Descargar TODO desde Firebase
+  document.getElementById("descargar-firebase").addEventListener("click", async () => {
+    const q = query(collection(db, "articulos-quebrados"));
+    const querySnapshot = await getDocs(q);
+
+    const datos = querySnapshot.docs.map(doc => ({
+      Código: doc.data().codigo,
+      Descripción: doc.data().descripcion,
+      Departamento: doc.data().departamento,
+      Fecha: new Date(doc.data().fecha.toDate ? doc.data().fecha.toDate() : doc.data().fecha).toLocaleString()
+    }));
+
+    const ws = utils.json_to_sheet(datos);
+    const wb = utils.book_new();
+    utils.book_append_sheet(wb, ws, "Artículos");
+    writeFile(wb, "articulos_desde_firebase.xlsx");
+  });
+
+  mostrarArticulos();
+});
