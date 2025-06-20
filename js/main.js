@@ -12,7 +12,6 @@ const firebaseConfig = {
   appId: "1:586968104925:web:3aa49cf683d1002c280034"
 };
 
-// Inicializar Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
@@ -40,7 +39,7 @@ async function mostrarArticulos(filtro = "") {
   }
 
   if (filtrados.length === 0) {
-    contenedor.innerHTML = `<tr><td colspan="4" style="text-align:center;">No hay artículos para mostrar</td></tr>`;
+    contenedor.innerHTML = `<tr><td colspan="6" style="text-align:center;">No hay artículos para mostrar</td></tr>`;
     return;
   }
 
@@ -50,6 +49,8 @@ async function mostrarArticulos(filtro = "") {
         <td>${data.codigo}</td>
         <td>${data.descripcion}</td>
         <td>${data.departamento}</td>
+        <td>${data.cantidad ?? "-"}</td>
+        <td>${data.tipo ?? "-"}</td>
         <td>${new Date(data.fecha.toDate ? data.fecha.toDate() : data.fecha).toLocaleString()}</td>
       </tr>
     `;
@@ -65,16 +66,37 @@ document.addEventListener("DOMContentLoaded", () => {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const nuevoCodigo = form.codigo.value.trim();
+
+    // Obtener artículos si aún no se cargaron
+    if (articulos.length === 0) {
+      const q = query(collection(db, "articulos-quebrados"));
+      const querySnapshot = await getDocs(q);
+      articulos = querySnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    }
+
+    const yaExiste = articulos.some(a => a.codigo.trim() === nuevoCodigo);
+
+    if (yaExiste) {
+      alert("⚠️ Este código ya está ingresado.");
+      return;
+    }
+
     try {
       await addDoc(collection(db, "articulos-quebrados"), {
-        codigo: form.codigo.value,
-        descripcion: form.descripcion.value,
+        codigo: nuevoCodigo,
+        descripcion: form.descripcion.value.trim(),
         departamento: form.departamento.value.trim(),
+        cantidad: parseInt(form.cantidad.value),
+        tipo: form.tipo.value,
         fecha: new Date()
       });
       alert("Artículo cargado con éxito ✅");
       form.reset();
-      articulos = []; // Forzar recarga
+      articulos = [];
       mostrarArticulos(filtroDepartamento.value);
     } catch (error) {
       console.error("Error al guardar: ", error);
@@ -91,7 +113,6 @@ document.addEventListener("DOMContentLoaded", () => {
     mostrarArticulos();
   });
 
-  // Exportar lo que se ve en la tabla
   document.getElementById("exportar-excel").addEventListener("click", () => {
     const tabla = document.querySelector("table");
     const wb = utils.book_new();
@@ -100,7 +121,6 @@ document.addEventListener("DOMContentLoaded", () => {
     writeFile(wb, "articulos_quebrados_visible.xlsx");
   });
 
-  // Descargar TODO desde Firebase
   document.getElementById("descargar-firebase").addEventListener("click", async () => {
     const q = query(collection(db, "articulos-quebrados"));
     const querySnapshot = await getDocs(q);
@@ -109,6 +129,8 @@ document.addEventListener("DOMContentLoaded", () => {
       Código: doc.data().codigo,
       Descripción: doc.data().descripcion,
       Departamento: doc.data().departamento,
+      Cantidad: doc.data().cantidad ?? "",
+      Tipo: doc.data().tipo ?? "",
       Fecha: new Date(doc.data().fecha.toDate ? doc.data().fecha.toDate() : doc.data().fecha).toLocaleString()
     }));
 

@@ -15,15 +15,26 @@
 
   <!-- Formulario de carga -->
   <main class="formulario">
-    <h2>Cargar Artículo Quebrado</h2>
+    <h2>Cargar Artículo Faltantes</h2>
     <form id="form-articulos">
       <input type="text" id="codigo" placeholder="Código" required />
       <input type="text" id="descripcion" placeholder="Descripción" required />
       <input type="text" id="departamento" placeholder="Departamento" required />
+      
+      <div style="display: flex; gap: 1rem;">
+        <input type="number" id="cantidad" placeholder="Cantidad a pedir" required style="flex: 1;" />
+        <select id="tipo" required style="flex: 1;">
+          <option value="">Tipo</option>
+          <option value="Unidades">Unidades</option>
+          <option value="Bultos">Bultos</option>
+        </select>
+      </div>
+
       <button type="submit">Guardar</button>
     </form>
   </main>
 
+  <!-- Sección de artículos cargados -->
   <section class="formulario">
     <h2>Artículos cargados</h2>
 
@@ -46,6 +57,8 @@
             <th>Código</th>
             <th>Descripción</th>
             <th>Departamento</th>
+            <th>Cantidad</th>
+            <th>Tipo</th>
             <th>Fecha</th>
           </tr>
         </thead>
@@ -57,6 +70,7 @@
     <button id="descargar-firebase">🗂️ Descargar todo desde Firebase</button>
   </section>
 
+  <!-- Footer -->
   <footer>
     <p>&copy; 2025 Supermercado Mayorista Emanuel</p>
   </footer>
