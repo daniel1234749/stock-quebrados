@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stock Quebrado - Emanuel</title>
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body>
+
+  <!-- Logo -->
+  <header class="logo-centrado">
+    <img src="img/logo-emanuel.png" alt="Logo Emanuel" class="logo-grande" />
+  </header>
+
+  <!-- Formulario de carga -->
+  <main class="formulario">
+    <h2>Cargar Artículo Quebrado</h2>
+    <form id="form-articulos">
+      <input type="text" id="codigo" placeholder="Código" required />
+      <input type="text" id="descripcion" placeholder="Descripción" required />
+      <input type="text" id="departamento" placeholder="Departamento" required />
+      <button type="submit">Guardar</button>
+    </form>
+  </main>
+
+  <section class="formulario">
+    <h2>Artículos cargados</h2>
+
+    <label for="filtro-departamento">Filtrar por Departamento:</label>
+    <select id="filtro-departamento">
+      <option value="">-- Todos --</option>
+      <option value="Almacén">Almacén</option>
+      <option value="Bebidas">Bebidas</option>
+      <option value="Perfumería">Perfumería</option>
+      <option value="Limpieza">Limpieza</option>
+      <option value="Bazar">Bazar</option>
+      <option value="Lácteos">Lácteos</option>
+    </select>
+    <button id="limpiar-filtro">Limpiar filtro</button>
+
+    <div class="tabla-contenedor">
+      <table>
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descripción</th>
+            <th>Departamento</th>
+            <th>Fecha</th>
+          </tr>
+        </thead>
+        <tbody id="lista-articulos"></tbody>
+      </table>
+    </div>
+    <button id="exportar-excel">Exportar a Excel</button>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Supermercado Mayorista Emanuel</p>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
