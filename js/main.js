@@ -1,5 +1,12 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, query } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { utils, writeFile } from "https://cdn.sheetjs.com/xlsx-0.20.0/package/xlsx.mjs";
 
 // Firebase config
@@ -21,14 +28,12 @@ async function mostrarArticulos(filtro = "", textoBusqueda = "") {
   const contenedor = document.getElementById("lista-articulos");
   contenedor.innerHTML = "";
 
-  if (articulos.length === 0) {
-    const q = query(collection(db, "articulos-quebrados"));
-    const querySnapshot = await getDocs(q);
-    articulos = querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  }
+  const q = query(collection(db, "articulos-quebrados"));
+  const querySnapshot = await getDocs(q);
+  articulos = querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
 
   let filtrados = articulos;
 
@@ -78,20 +83,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const nuevoCodigo = form.codigo.value.trim();
 
-    // Obtener artículos si aún no se cargaron
-    if (articulos.length === 0) {
-      const q = query(collection(db, "articulos-quebrados"));
-      const querySnapshot = await getDocs(q);
-      articulos = querySnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
-    }
+    const q = query(
+      collection(db, "articulos-quebrados"),
+      where("codigo", "==", nuevoCodigo)
+    );
+    const querySnapshot = await getDocs(q);
 
-    const yaExiste = articulos.some(a => a.codigo.trim() === nuevoCodigo);
-
-    if (yaExiste) {
-      alert("⚠️ Este código ya está ingresado.");
+    if (!querySnapshot.empty) {
+      alert("⚠️ Este código ya está ingresado en Base de datos.");
       return;
     }
 
@@ -106,7 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       alert("Artículo cargado con éxito ✅");
       form.reset();
-      articulos = [];
       mostrarArticulos(filtroDepartamento.value, buscador.value);
     } catch (error) {
       console.error("Error al guardar: ", error);
