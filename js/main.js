@@ -17,7 +17,7 @@ const db = getFirestore(app);
 
 let articulos = [];
 
-async function mostrarArticulos(filtro = "") {
+async function mostrarArticulos(filtro = "", textoBusqueda = "") {
   const contenedor = document.getElementById("lista-articulos");
   contenedor.innerHTML = "";
 
@@ -31,10 +31,19 @@ async function mostrarArticulos(filtro = "") {
   }
 
   let filtrados = articulos;
+
   if (filtro) {
     const filtroNormalizado = filtro.trim().toLowerCase();
-    filtrados = articulos.filter(a => 
+    filtrados = filtrados.filter(a =>
       a.departamento && a.departamento.trim().toLowerCase() === filtroNormalizado
+    );
+  }
+
+  const texto = textoBusqueda.trim().toLowerCase();
+  if (texto) {
+    filtrados = filtrados.filter(a =>
+      a.codigo.toLowerCase().includes(texto) ||
+      a.descripcion.toLowerCase().includes(texto)
     );
   }
 
@@ -62,6 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("form-articulos");
   const filtroDepartamento = document.getElementById("filtro-departamento");
   const limpiarFiltroBtn = document.getElementById("limpiar-filtro");
+  const buscador = document.getElementById("buscador");
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -97,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Artículo cargado con éxito ✅");
       form.reset();
       articulos = [];
-      mostrarArticulos(filtroDepartamento.value);
+      mostrarArticulos(filtroDepartamento.value, buscador.value);
     } catch (error) {
       console.error("Error al guardar: ", error);
       alert("Hubo un error al guardar ❌");
@@ -105,12 +115,16 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   filtroDepartamento.addEventListener("change", () => {
-    mostrarArticulos(filtroDepartamento.value);
+    mostrarArticulos(filtroDepartamento.value, buscador.value);
   });
 
   limpiarFiltroBtn.addEventListener("click", () => {
     filtroDepartamento.value = "";
-    mostrarArticulos();
+    mostrarArticulos("", buscador.value);
+  });
+
+  buscador.addEventListener("input", () => {
+    mostrarArticulos(filtroDepartamento.value, buscador.value);
   });
 
   document.getElementById("exportar-excel").addEventListener("click", () => {
